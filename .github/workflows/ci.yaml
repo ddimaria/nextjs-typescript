@@ -39,8 +39,8 @@ jobs:
       - name: Bring up dependent services in docker-compose
         run: docker-compose up -d
        
-      - name: Autogenerate types
-        run: npm run compile:graphql
+      # - name: Autogenerate types
+      #   run: npm run compile:graphql
       
       - name: Run unit tests
         run: npm run test
