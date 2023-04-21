@@ -1,0 +1,49 @@
+name: Continuous Integration (CI)
+
+on:
+  push:
+    branches:
+      # We can define multiple branches as well      
+      - main
+  pull_request:
+    branches:
+      - main
+      
+jobs:
+  build:
+    name: CI
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+        
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+       
+      - name: Install dependencies
+        run: npm ci && npx playwright install --with-deps
+       
+      - name: Autogenerate types
+        run: npm run compile:graphql
+      
+      - name: Run unit tests
+        run: npm run test
+      
+      - name: Run e2e tests
+        run: npm run test:e2e
+        
+      - name: Create build
+        run: npm run build
